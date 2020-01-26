@@ -2,7 +2,7 @@
 Smart Sleep System
 Rachel Bai
 v0.4
-Last edited: 1/02/20
+Last edited: 1/26/20
 
 Reads accelerometer, temperature, and humidity data from the LSM9DS1 and HTS221
 sensors of the Arduino 33 BLE Sense and prints it to a micro-SD card.
@@ -10,9 +10,16 @@ sensors of the Arduino 33 BLE Sense and prints it to a micro-SD card.
 HW config:
 Arduino Nano BLE 33 Sense
 Adafruit Micro-SD Breakout Board
-Sandisk 16GB Micro-SD card
-2000mAh 3.7 lipo battery
+Kingston 8GB Micro-SD card
+1000mAh 3.7 lipo battery
 Adafruit PowerBoost 500
+
+HW
+measure power consumption at 200ms interval
+power saving algorithm
+maybe remove humidity/temp for now?
+create protocol for calibration
+design 3D case and print it x3
 
 Libraries from Arduino
 *******************************************************************************/
@@ -21,10 +28,11 @@ Libraries from Arduino
 #include <Arduino_HTS221.h>
 #include <SD.h>
 
-boolean debug_mode = false;
+
+boolean debug_mode = true;
 
 unsigned long previousMillis = 0;
-const long interval = 500;
+const long interval = 200;
 
 void config_sd() {
     pinMode(10, OUTPUT); //SD module CS connected to pin 10 of the Arduino
@@ -64,6 +72,8 @@ void loop() {
     if(currentMillis - previousMillis >= interval) {
         previousMillis = currentMillis;
 
+        unsigned long time = millis(); //seconds since start of sketch
+
         float x,y,z;
         float temperature = HTS.readTemperature();
         float humidity = HTS.readHumidity();
@@ -74,40 +84,41 @@ void loop() {
             IMU.readAcceleration(x, y, z);
 
             if (debug_mode == true) {
+                Serial.print(time);
+                Serial.print(':');
                 Serial.print(x);
-                Serial.print('\t');
+                Serial.print(' ');
                 Serial.print(y);
-                Serial.print('\t');
-                Serial.println(z);
+                Serial.print(' ');
+                Serial.print(z);
+                Serial.print(' ');
             }
 
+            data.print(time);
+            data.print(':');
             data.print(x);
-            data.print('\t');
+            data.print(' ');
             data.print(y);
-            data.print('\t');
-            data.println(z);
+            data.print(' ');
+            data.print(z);
+            data.print(' ');
         }
 
         if (debug_mode == true) {
-            Serial.print("Temperature = ");
             Serial.print(temperature);
-            Serial.println(" °C");
-
-            Serial.print("Humidity    = ");
-            Serial.print(humidity);
-            Serial.println(" %");
+            Serial.print(' ');
+            Serial.println(humidity);
         }
 
         //print temperature and humidity to SD card
-        data.print("Temperature = ");
         data.print(temperature);
-        data.println(" °C");
-
-        data.print("Humidity = ");
-        data.print(humidity);
-        data.println(" %");
+        data.print(' ');
+        data.println(humidity);
 
         //save files on SD card
         data.close();
+
+        //change the time
+        time += interval;
     }
 }
