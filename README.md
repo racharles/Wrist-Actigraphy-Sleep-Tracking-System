@@ -1,5 +1,5 @@
 # Wrist Actigraphy Sleep Tracking System
-Repo for the WASTS project, which entered into the 2020 LA science fair.\
+Repo for the WASTS project, which entered into the 2020 LA science fair.
 ## Recognition
 Engineering Applications Sr Division - Honorable Mention\
 Darrell Smedley Award Sr Division
